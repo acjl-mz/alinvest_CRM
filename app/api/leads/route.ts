@@ -6,7 +6,6 @@ const schema = z.object({
   phone: z.string().trim().min(6).max(40),
   email: z.union([z.string().trim().email().max(254), z.literal("")]).optional(),
   city: z.string().trim().max(120).optional(),
-  education_level: z.string().max(100).optional(),
   professional_status: z.string().max(100).optional(),
   organization: z.string().max(160).optional(),
   segments: z.array(z.enum(["normas-iso", "hsee", "negocios-gestao"])).min(1).max(3),
