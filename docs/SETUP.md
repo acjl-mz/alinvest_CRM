@@ -20,3 +20,4 @@ Submeta uma manifestação em /interesse e confirme a recepção no endereço co
 
 ## Dados
 Não existe persistência no site, Sheets ou base de dados. O e-mail é o registo operacional. Restrinja o acesso à caixa de correio à equipa autorizada.
+\n## Links para anúncios Meta\nUse um link específico por conjunto de anúncios: /interesse/normas-iso, /interesse/hsee ou /interesse/negocios-gestao. Cada página pré-selecciona o segmento de origem; a equipa também recebe essa identificação no e-mail.\n
