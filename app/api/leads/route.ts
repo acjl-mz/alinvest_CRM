@@ -16,6 +16,10 @@ const schema = z.object({
   consent: z.literal(true),
   source: z.literal("landing_page"),
   website: z.string().max(0).optional(),
+}).superRefine((data, ctx) => {
+  if (data.campaign_segment && (data.segments.length !== 1 || data.segments[0] !== data.campaign_segment)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["segments"], message: "A campanha só pode registar o segmento de origem." });
+  }
 });
 
 export async function POST(request: Request) {
