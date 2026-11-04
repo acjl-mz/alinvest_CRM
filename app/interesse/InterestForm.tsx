@@ -14,7 +14,7 @@ export default function InterestForm({ initialSegment = "" }: { initialSegment?:
   const campaignSegment = segments.some(s => s.slug === initialSegment) ? initialSegment : "";
   const visibleSegments = campaignSegment ? segments.filter(s => s.slug === campaignSegment) : segments;
   const [selected, setSelected] = useState<string[]>(campaignSegment ? [campaignSegment] : []);
-  const [values, setValues] = useState({full_name:"",email:"",phone:"",city:"",education_level:"",professional_status:"",organization:"",preferred_mode:"",preferred_schedule:""});
+  const [values, setValues] = useState({full_name:"",email:"",phone:"",city:"",professional_status:"",organization:"",preferred_mode:"",preferred_schedule:""});
   const [consent,setConsent] = useState(false);
   const [loading,setLoading] = useState(false);
   const [error,setError] = useState("");
@@ -81,10 +81,7 @@ export default function InterestForm({ initialSegment = "" }: { initialSegment?:
             <div className="field"><label htmlFor="city">Cidade / Província</label><input id="city" name="city" value={values.city} onChange={update} placeholder="Ex.: Maputo"/></div>
 
             <div className="form-section-title"><span>03</span><h3>O seu perfil e disponibilidade</h3></div>
-            <div className="form-grid-two">
-              <div className="field"><label htmlFor="education_level">Nível de formação</label><select id="education_level" name="education_level" value={values.education_level} onChange={update}><option value="">Seleccione</option>{["Ensino básico","Ensino secundário","Técnico-profissional","Licenciatura","Pós-graduação / Mestrado","Doutoramento","Outro"].map(x=><option key={x}>{x}</option>)}</select></div>
-              <div className="field"><label htmlFor="professional_status">Situação profissional</label><select id="professional_status" name="professional_status" value={values.professional_status} onChange={update}><option value="">Seleccione</option>{statuses.map(x=><option key={x}>{x}</option>)}</select></div>
-            </div>
+            <div className="field"><label htmlFor="professional_status">Situação profissional</label><select id="professional_status" name="professional_status" value={values.professional_status} onChange={update}><option value="">Seleccione</option>{statuses.map(x=><option key={x}>{x}</option>)}</select></div>
             <div className="field"><label htmlFor="organization">Empresa / Organização (opcional)</label><input id="organization" name="organization" value={values.organization} onChange={update} placeholder="Nome da organização"/></div>
             <div className="form-grid-two">
               <div className="field"><label htmlFor="preferred_mode">Modalidade preferida</label><select id="preferred_mode" name="preferred_mode" value={values.preferred_mode} onChange={update}><option value="">Sem preferência definida</option><option>Presencial</option><option>Online</option><option>Híbrida</option></select></div>
