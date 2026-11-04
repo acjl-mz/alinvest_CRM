@@ -1,47 +1,24 @@
-# ALINVEST CRM
+# ALINVEST — Captação de Formandos
 
-Plataforma de captação, relacionamento e gestão de estudantes interessados nos cursos da ALINVEST.
-
-## Stack
-- Next.js 15 + React 19 + TypeScript
-- Tailwind CSS 4
-- Supabase (Postgres, Auth, RLS)
-- Zod
-- Vercel
-
-## Segmentos iniciais
+Landing page e formulário de manifestação de interesse para os três segmentos de formação:
 - Normas ISO
 - HSEE
 - Negócios / Gestão
 
-## Funcionalidades iniciais
-- Landing page pública
-- Formulário de manifestação de interesse sem conta
-- Captação de vários segmentos por contacto
-- CRM autenticado com pesquisa, filtros e actualização de estado
-- Registo de interesses por segmento
-- Estrutura de base para cursos, actividades e atribuição de responsáveis
+## Arquitectura simples: notificação por e-mail
+- Next.js 15, React 19 e TypeScript.
+- Vercel para alojamento.
+- Google Apps Script Web App para encaminhar notificações através do Gmail.
+- Sem Supabase, base de dados, autenticação, Google Sheets ou armazenamento de leads.
 
-## Princípios
-- Supabase é a fonte única de dados.
-- Não há armazenamento local nem Google Sheets em produção.
-- Dados públicos só podem ser inseridos como novos interessados com consentimento.
-- O CRM exige autenticação.
-- Segredos nunca são versionados.
+## Funcionamento
+1. O visitante preenche o formulário em /interesse.
+2. O endpoint /api/leads valida os dados.
+3. O endpoint envia os dados ao Apps Script com um segredo de servidor.
+4. O Apps Script valida o segredo e envia uma notificação para o endereço ALINVEST configurado.
+5. O visitante recebe a confirmação de envio.
 
-## Estrutura
-- `app/` — páginas e endpoints
-- `components/` — componentes partilhados
-- `lib/` — Supabase e utilitários
-- `modules/` — domínios funcionais (evolução)
-- `supabase/migrations/` — schema, seeds e RLS
-- `docs/` — arquitectura e operação
+O e-mail é o registo operacional da manifestação de interesse. A aplicação não mantém cópias dos dados.
 
 ## Configuração
-Ver [docs/SETUP.md](docs/SETUP.md) e [.env.example](.env.example).
-
-## Desenvolvimento
-`npm install` → `npm run dev`
-
-## Build
-`npm run build`
+Consultar docs/SETUP.md. As variáveis necessárias são ALINVEST_EMAIL_WEBHOOK_URL e ALINVEST_WEBHOOK_SECRET.
