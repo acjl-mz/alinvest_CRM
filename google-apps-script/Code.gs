@@ -12,6 +12,7 @@ function doPost(e) {
     if (!secret || !recipient || p.secret !== secret) return respond({ok:false});
     var allowed = ["normas-iso", "hsee", "negocios-gestao"];
     if (!p.consent || p.source !== "landing_page" || !p.full_name || !p.phone ||
+        (p.campaign_segment && allowed.indexOf(p.campaign_segment) < 0) ||
         !Array.isArray(p.segments) || p.segments.length < 1 || p.segments.length > 3 ||
         !p.segments.every(function(s){return allowed.indexOf(s) >= 0;})) return respond({ok:false});
     var names = {"normas-iso":"Normas ISO","hsee":"HSEE","negocios-gestao":"Negócios / Gestão"};
@@ -19,6 +20,7 @@ function doPost(e) {
       ["Nome completo",p.full_name],["Telefone / WhatsApp",p.phone],["E-mail",p.email],
       ["Cidade / Província",p.city],["Nível de formação",p.education_level],
       ["Situação profissional",p.professional_status],["Empresa / Organização",p.organization],
+      ["Segmento de origem da campanha",p.campaign_segment ? names[p.campaign_segment] : ""],
       ["Áreas de interesse",p.segments.map(function(s){return names[s];}).join(", ")],
       ["Modalidade preferida",p.preferred_mode],["Disponibilidade",p.preferred_schedule],
       ["Recebido em",p.submitted_at]
