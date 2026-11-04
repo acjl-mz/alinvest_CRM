@@ -1,5 +1,7 @@
 -- ALINVEST CRM: initial schema
 create extension if not exists pgcrypto;
+create schema if not exists private;
+revoke all on schema private from public, anon, authenticated;
 
 create table if not exists public.course_segments (
   id uuid primary key default gen_random_uuid(),
@@ -10,7 +12,6 @@ create table if not exists public.course_segments (
   sort_order integer not null default 0,
   created_at timestamptz not null default now()
 );
-
 create table if not exists public.courses (
   id uuid primary key default gen_random_uuid(),
   segment_id uuid not null references public.course_segments(id) on delete restrict,
@@ -21,7 +22,6 @@ create table if not exists public.courses (
   active boolean not null default true,
   created_at timestamptz not null default now()
 );
-
 create table if not exists public.leads (
   id uuid primary key default gen_random_uuid(),
   full_name text not null,
@@ -34,13 +34,13 @@ create table if not exists public.leads (
   notes text,
   source text not null default 'landing_page',
   consent boolean not null default false,
+  selected_segment_slugs text[] not null default '{}',
   status text not null default 'new' check (status in ('new','contacted','follow_up','qualified','application_started','enrolled','matriculated','no_answer','not_interested','lost')),
   priority text not null default 'normal' check (priority in ('low','normal','high')),
   assigned_to uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
 create table if not exists public.lead_interests (
   id uuid primary key default gen_random_uuid(),
   lead_id uuid not null references public.leads(id) on delete cascade,
@@ -51,7 +51,6 @@ create table if not exists public.lead_interests (
   created_at timestamptz not null default now(),
   unique (lead_id, segment_id, course_id)
 );
-
 create table if not exists public.lead_activities (
   id uuid primary key default gen_random_uuid(),
   lead_id uuid not null references public.leads(id) on delete cascade,
@@ -70,13 +69,39 @@ create index if not exists lead_interests_segment_idx on public.lead_interests(s
 create index if not exists lead_activities_lead_idx on public.lead_activities(lead_id, created_at desc);
 
 create or replace function public.set_updated_at()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql set search_path = '' as $$
 begin new.updated_at = now(); return new; end;
 $$;
-
 drop trigger if exists leads_set_updated_at on public.leads;
 create trigger leads_set_updated_at before update on public.leads
 for each row execute function public.set_updated_at();
+
+-- Internal trigger function: atomically materializes selected segments without exposing PII to anon.
+create or replace function private.create_lead_interests()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare segment_slug text;
+begin
+  if cardinality(new.selected_segment_slugs) < 1 or cardinality(new.selected_segment_slugs) > 3 then
+    raise exception 'Select between one and three segments';
+  end if;
+  foreach segment_slug in array new.selected_segment_slugs loop
+    insert into public.lead_interests (lead_id, segment_id)
+    select new.id, s.id
+    from public.course_segments s
+    where s.slug = segment_slug and s.active = true;
+    if not found then raise exception 'Invalid or inactive segment'; end if;
+  end loop;
+  return new;
+end;
+$$;
+revoke all on function private.create_lead_interests() from public, anon, authenticated;
+drop trigger if exists leads_create_interests on public.leads;
+create trigger leads_create_interests after insert on public.leads
+for each row execute function private.create_lead_interests();
 
 insert into public.course_segments (slug, name, description, sort_order)
 values
@@ -91,22 +116,15 @@ alter table public.leads enable row level security;
 alter table public.lead_interests enable row level security;
 alter table public.lead_activities enable row level security;
 
--- Public visitors can read active catalogue entries only.
 drop policy if exists "Public can read active segments" on public.course_segments;
 create policy "Public can read active segments" on public.course_segments for select to anon, authenticated using (active = true);
 drop policy if exists "Public can read active courses" on public.courses;
 create policy "Public can read active courses" on public.courses for select to anon, authenticated using (active = true);
 
--- Public intake is limited to creating a new lead with explicit consent.
 drop policy if exists "Public can create leads" on public.leads;
 create policy "Public can create leads" on public.leads for insert to anon, authenticated
-with check (status = 'new' and assigned_to is null and consent = true and source = 'landing_page');
+with check (status = 'new' and assigned_to is null and consent = true and source = 'landing_page' and cardinality(selected_segment_slugs) between 1 and 3);
 
-drop policy if exists "Public can create lead interests" on public.lead_interests;
-create policy "Public can create lead interests" on public.lead_interests for insert to anon, authenticated
-with check (exists (select 1 from public.leads l where l.id = lead_id and l.status = 'new' and l.source = 'landing_page' and l.consent = true));
-
--- Authenticated CRM users can manage operational records. Restrict account provisioning to trusted admins.
 drop policy if exists "Authenticated users manage leads" on public.leads;
 create policy "Authenticated users manage leads" on public.leads for all to authenticated using (true) with check (true);
 drop policy if exists "Authenticated users manage interests" on public.lead_interests;
@@ -119,5 +137,5 @@ drop policy if exists "Authenticated users manage courses" on public.courses;
 create policy "Authenticated users manage courses" on public.courses for all to authenticated using (true) with check (true);
 
 grant select on public.course_segments, public.courses to anon, authenticated;
-grant insert on public.leads, public.lead_interests to anon, authenticated;
+grant insert on public.leads to anon, authenticated;
 grant select, insert, update, delete on public.leads, public.lead_interests, public.lead_activities, public.course_segments, public.courses to authenticated;
