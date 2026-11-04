@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
 const schema = z.object({
@@ -10,34 +9,39 @@ const schema = z.object({
   education_level: z.string().max(100).optional(),
   professional_status: z.string().max(100).optional(),
   organization: z.string().max(160).optional(),
-  segments: z.array(z.enum(["normas-iso","hsee","negocios-gestao"])).min(1).max(3),
+  segments: z.array(z.enum(["normas-iso", "hsee", "negocios-gestao"])).min(1).max(3),
   preferred_mode: z.string().max(60).optional(),
   preferred_schedule: z.string().max(80).optional(),
   consent: z.literal(true),
   source: z.literal("landing_page"),
+  website: z.string().max(0).optional(),
 });
 
 export async function POST(request: Request) {
   try {
     const parsed = schema.safeParse(await request.json());
-    if (!parsed.success) return NextResponse.json({error:"Verifique os campos obrigatórios e tente novamente."},{status:400});
-    const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if(!url||!key) return NextResponse.json({error:"O serviço de registo ainda não está configurado."},{status:503});
-    const supabase=createClient(url,key,{auth:{persistSession:false}});
-    const data=parsed.data;
-    const {error}=await supabase.from("leads").insert({
-      full_name:data.full_name,phone:data.phone,email:data.email||null,city:data.city||null,
-      education_level:data.education_level||null,professional_status:data.professional_status||null,
-      organization:data.organization||null,source:"landing_page",consent:true,status:"new",\n      preferred_mode:data.preferred_mode||null,preferred_schedule:data.preferred_schedule||null,
-      selected_segment_slugs:data.segments
+    if (!parsed.success) return NextResponse.json({ error: "Verifique os campos obrigatórios e tente novamente." }, { status: 400 });
+    const data = parsed.data;
+    if (data.website) return NextResponse.json({ ok: true });
+    const webhookUrl = process.env.ALINVEST_EMAIL_WEBHOOK_URL;
+    const webhookSecret = process.env.ALINVEST_WEBHOOK_SECRET;
+    if (!webhookUrl || !webhookSecret) return NextResponse.json({ error: "O serviço de recepção ainda não está configurado." }, { status: 503 });
+
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+      signal: AbortSignal.timeout(15000),
+      body: JSON.stringify({ ...data, secret: webhookSecret, submitted_at: new Date().toISOString() }),
     });
-    if(error) {
-      console.error("Lead insert failed",error.message);
-      return NextResponse.json({error:"Não foi possível guardar o registo. Tente novamente mais tarde."},{status:500});
+    const result = await response.json().catch(() => null);
+    if (!response.ok || result?.ok !== true) {
+      console.error("ALINVEST email webhook failed", response.status);
+      return NextResponse.json({ error: "Não foi possível enviar o seu pedido. Tente novamente mais tarde." }, { status: 502 });
     }
-    return NextResponse.json({ok:true},{status:201});
-  } catch {
-    return NextResponse.json({error:"Pedido inválido."},{status:400});
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("ALINVEST notification error", error instanceof Error ? error.message : "Unknown error");
+    return NextResponse.json({ error: "Ocorreu um problema no envio. Tente novamente." }, { status: 502 });
   }
 }
