@@ -20,5 +20,5 @@ Landing page e formulário de manifestação de interesse para os três segmento
 
 O e-mail é o registo operacional da manifestação de interesse. A aplicação não mantém cópias dos dados.
 
-## Configuração
+## Links directos para campanhas\n- Normas ISO: /interesse/normas-iso\n- HSEE: /interesse/hsee\n- Negócios / Gestão: /interesse/negocios-gestao\n\nCada link abre o mesmo formulário com o segmento da campanha pré-seleccionado e identificado na notificação recebida por e-mail.\n\n## Configuração
 Consultar docs/SETUP.md. As variáveis necessárias são ALINVEST_EMAIL_WEBHOOK_URL e ALINVEST_WEBHOOK_SECRET.
