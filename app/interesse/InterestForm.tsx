@@ -36,7 +36,7 @@ export default function InterestForm({ initialSegment = "" }: { initialSegment?:
   }
   return <main className="form-wrap">
     <div className="form-topbar"><div className="form-topbar-inner">
-      <Link href="/" className="brand">ALINVEST<span>.</span></Link>
+      <Link href="/" className="brand brand-logo"><img src="/brand/logo" alt="ALINVEST" /></Link>
       <span className="form-topbar-note">Formação profissional · Manifestação de interesse</span>
     </div></div>
     <section className="form-hero"><div className="form-hero-inner">
