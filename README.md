@@ -6,7 +6,7 @@ Plataforma de captação, relacionamento e gestão de estudantes interessados no
 - Next.js 15 + React 19 + TypeScript
 - Tailwind CSS 4
 - Supabase (Postgres, Auth, RLS)
-- React Hook Form + Zod
+- Zod
 - Vercel
 
 ## Segmentos iniciais
@@ -14,24 +14,31 @@ Plataforma de captação, relacionamento e gestão de estudantes interessados no
 - HSEE
 - Negócios / Gestão
 
+## Funcionalidades iniciais
+- Landing page pública
+- Formulário de manifestação de interesse sem conta
+- Captação de vários segmentos por contacto
+- CRM autenticado com pesquisa, filtros e actualização de estado
+- Registo de interesses por segmento
+- Estrutura de base para cursos, actividades e atribuição de responsáveis
+
 ## Princípios
-- A landing page e a manifestação de interesse são públicas e não exigem conta.
-- O CRM é reservado a utilizadores autenticados.
-- Supabase é a fonte única de dados; não há armazenamento local ou Google Sheets em produção.
-- Um contacto pode manifestar interesse em vários cursos.
-- Dados pessoais e operações administrativas são protegidos por RLS.
+- Supabase é a fonte única de dados.
+- Não há armazenamento local nem Google Sheets em produção.
+- Dados públicos só podem ser inseridos como novos interessados com consentimento.
+- O CRM exige autenticação.
 - Segredos nunca são versionados.
 
 ## Estrutura
 - `app/` — páginas e endpoints
 - `components/` — componentes partilhados
-- `lib/` — Supabase, validação e utilitários
-- `modules/` — domínios de captação e CRM
-- `supabase/migrations/` — schema e políticas
+- `lib/` — Supabase e utilitários
+- `modules/` — domínios funcionais (evolução)
+- `supabase/migrations/` — schema, seeds e RLS
 - `docs/` — arquitectura e operação
 
 ## Configuração
-Ver `docs/SETUP.md` e `.env.example`.
+Ver [docs/SETUP.md](docs/SETUP.md) e [.env.example](.env.example).
 
 ## Desenvolvimento
 `npm install` → `npm run dev`
