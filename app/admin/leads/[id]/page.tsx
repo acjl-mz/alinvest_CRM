@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -11,7 +11,7 @@ const labels:Record<string,string>={new:"Novo interessado",contacted:"Contactado
 const types=[["call","Chamada"],["whatsapp","WhatsApp"],["email","E-mail"],["meeting","Reunião"],["note","Nota"],["task","Tarefa"]] as const;
 
 export default function LeadDetailPage(){
- const params=useParams<{id:string}>();const router=useRouter();const [lead,setLead]=useState<Lead|null>(null);const [activities,setActivities]=useState<Activity[]>([]);const [loading,setLoading]=useState(true);const [kind,setKind]=useState("call");const [subject,setSubject]=useState("");const [details,setDetails]=useState("");const [nextAt,setNextAt]=useState("");const [saving,setSaving]=useState(false);const supabase=createClient();
+ const params=useParams<{id:string}>();const router=useRouter();const [lead,setLead]=useState<Lead|null>(null);const [activities,setActivities]=useState<Activity[]>([]);const [loading,setLoading]=useState(true);const [kind,setKind]=useState("call");const [subject,setSubject]=useState("");const [details,setDetails]=useState("");const [nextAt,setNextAt]=useState("");const [saving,setSaving]=useState(false);const supabase=useMemo(()=>createClient(),[]);
  useEffect(()=>{let live=true;(async()=>{const {data:{user}}=await supabase.auth.getUser();if(!user){router.replace("/admin/login");return;}const [l,a]=await Promise.all([supabase.from("leads").select("id,full_name,email,phone,city,education_level,professional_status,organization,status,created_at,lead_interests(preferred_mode,preferred_schedule,course_segments(name))").eq("id",params.id).single(),supabase.from("lead_activities").select("id,activity_type,subject,details,next_action_at,created_at").eq("lead_id",params.id).order("created_at",{ascending:false})]);if(!live)return;if(l.error||!l.data){router.replace("/admin");return;}setLead(l.data as unknown as Lead);setActivities(a.data??[]);setLoading(false);})();return()=>{live=false;};},[params.id,router,supabase]);
  async function addActivity(e:React.FormEvent){e.preventDefault();setSaving(true);const {data:{user}}=await supabase.auth.getUser();const {data,error}=await supabase.from("lead_activities").insert({lead_id:params.id,activity_type:kind,subject,details:details||null,next_action_at:nextAt?new Date(nextAt).toISOString():null,created_by:user?.id??null}).select("id,activity_type,subject,details,next_action_at,created_at").single();if(error){alert("Não foi possível guardar a interacção.");}else if(data){setActivities(old=>[data,...old]);setSubject("");setDetails("");setNextAt("");}setSaving(false);}
  if(loading)return <main className="admin-shell"><div className="admin-content">A carregar ficha...</div></main>;
