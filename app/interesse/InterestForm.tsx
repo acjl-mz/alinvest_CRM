@@ -12,6 +12,7 @@ const statuses = ["Estudante", "Trabalhador por conta de outrem", "Trabalhador p
 
 export default function InterestForm({ initialSegment = "" }: { initialSegment?: string }) {
   const campaignSegment = segments.some(s => s.slug === initialSegment) ? initialSegment : "";
+  const visibleSegments = campaignSegment ? segments.filter(s => s.slug === campaignSegment) : segments;
   const [selected, setSelected] = useState<string[]>(campaignSegment ? [campaignSegment] : []);
   const [values, setValues] = useState({full_name:"",email:"",phone:"",city:"",education_level:"",professional_status:"",organization:"",preferred_mode:"",preferred_schedule:""});
   const [consent,setConsent] = useState(false);
@@ -19,7 +20,7 @@ export default function InterestForm({ initialSegment = "" }: { initialSegment?:
   const [error,setError] = useState("");
   const [done,setDone] = useState(false);
   function update(e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement>) { setValues(v=>({...v,[e.target.name]:e.target.value})); }
-  function toggle(slug:string) { if (slug === campaignSegment) return; setSelected(old=>old.includes(slug)?old.filter(x=>x!==slug):[...old,slug]); }
+  function toggle(slug:string) { if (campaignSegment) return; setSelected(old=>old.includes(slug)?old.filter(x=>x!==slug):[...old,slug]); }
   async function submit(e:React.FormEvent<HTMLFormElement>) {
     e.preventDefault(); setError("");
     if (!selected.length) { setError("Seleccione pelo menos uma área de interesse."); return; }
@@ -66,8 +67,8 @@ export default function InterestForm({ initialSegment = "" }: { initialSegment?:
           <p>Preencha os campos abaixo. Os campos assinalados com * são obrigatórios.</p>
           <form onSubmit={submit}>
             <div className="form-section-title"><span>01</span><h3>Áreas de formação</h3></div>
-            <p className="muted">Em que áreas gostaria de desenvolver competências?</p>
-            <div className="choice-grid">{segments.map(s=><button type="button" key={s.slug} onClick={()=>toggle(s.slug)} className={`choice ${selected.includes(s.slug)?"active":""}`}>
+            <p className="muted">{campaignSegment ? "Área de formação seleccionada nesta campanha:" : "Em que áreas gostaria de desenvolver competências?"}</p>
+            <div className="choice-grid">{visibleSegments.map(s=><button type="button" key={s.slug} onClick={()=>toggle(s.slug)} aria-pressed={selected.includes(s.slug)} className={`choice ${selected.includes(s.slug)?"active":""}`}>
               <strong>{s.name} {s.slug===campaignSegment?"· Campanha":selected.includes(s.slug)?"✓":""}</strong><small>{s.detail}</small>
             </button>)}</div>
 
