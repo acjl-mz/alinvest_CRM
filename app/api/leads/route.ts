@@ -10,6 +10,7 @@ const schema = z.object({
   professional_status: z.string().max(100).optional(),
   organization: z.string().max(160).optional(),
   segments: z.array(z.enum(["normas-iso", "hsee", "negocios-gestao"])).min(1).max(3),
+  campaign_segment: z.enum(["normas-iso", "hsee", "negocios-gestao"]).optional(),
   preferred_mode: z.string().max(60).optional(),
   preferred_schedule: z.string().max(80).optional(),
   consent: z.literal(true),
