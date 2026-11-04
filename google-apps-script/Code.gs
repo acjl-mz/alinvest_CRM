@@ -9,8 +9,8 @@ function doPost(e) {
     var p = JSON.parse(e.postData.contents);
     var props = PropertiesService.getScriptProperties();
     var secret = props.getProperty("ALINVEST_WEBHOOK_SECRET");
-    var recipient = props.getProperty("ALINVEST_NOTIFICATION_EMAIL");
-    if (!secret || !recipient || p.secret !== secret) return respond({ok:false});
+    var recipient = "alinvest.corporate@gmail.com";
+    if (!secret || p.secret !== secret) return respond({ok:false});
     var allowed = ["normas-iso", "hsee", "negocios-gestao"];
     if (!p.consent || p.source !== "landing_page" || !p.full_name || !p.phone ||
         (p.campaign_segment && allowed.indexOf(p.campaign_segment) < 0) ||
@@ -24,8 +24,7 @@ function doPost(e) {
     var esc = function(v){return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");};
     var fields = [
       ["Nome completo",p.full_name],["Telefone / WhatsApp",p.phone],["E-mail",p.email],
-      ["Cidade / Província",p.city],["Nível de formação",p.education_level],
-      ["Situação profissional",p.professional_status],["Empresa / Organização",p.organization],
+      ["Cidade / Província",p.city],["Situação profissional",p.professional_status],["Empresa / Organização",p.organization],
       ["Modalidade preferida",p.preferred_mode],["Disponibilidade",p.preferred_schedule]
     ];
     var contactRows = fields.slice(0,3).filter(function(f){return f[1];}).map(function(f){
