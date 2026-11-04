@@ -13,3 +13,4 @@ Não há base de dados, autenticação, área de gestão, nem folha de cálculo.
 ## Configuração necessária
 - Vercel: ALINVEST_EMAIL_WEBHOOK_URL e ALINVEST_WEBHOOK_SECRET.
 - Apps Script: ALINVEST_NOTIFICATION_EMAIL e ALINVEST_WEBHOOK_SECRET.
+\n## Links de campanhas\n- /interesse/normas-iso\n- /interesse/hsee\n- /interesse/negocios-gestao\n\nO segmento de origem é encaminhado no campo campaign_segment e incluído na notificação por e-mail, separadamente das outras áreas de interesse que o estudante possa seleccionar.\n
