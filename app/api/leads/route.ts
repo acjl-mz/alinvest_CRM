@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     const {error}=await supabase.from("leads").insert({
       full_name:data.full_name,phone:data.phone,email:data.email||null,city:data.city||null,
       education_level:data.education_level||null,professional_status:data.professional_status||null,
-      organization:data.organization||null,source:"landing_page",consent:true,status:"new",
+      organization:data.organization||null,source:"landing_page",consent:true,status:"new",\n      preferred_mode:data.preferred_mode||null,preferred_schedule:data.preferred_schedule||null,
       selected_segment_slugs:data.segments
     });
     if(error) {
