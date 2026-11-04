@@ -47,12 +47,12 @@ export default function InterestForm({ initialSegment = "" }: { initialSegment?:
     <div className="form-layout">
       <aside className="form-aside">
         <div className="eyebrow">Antes de começar</div>
-        <h2>Uma manifestação de interesse, sem compromisso.</h2>
-        <p>Este formulário permite-nos compreender o que procura e entrar em contacto com informação adequada.</p>
+        <h2>{campaignSegment ? `Interesse em ${segments.find(s => s.slug === campaignSegment)?.name}` : "Uma manifestação de interesse, sem compromisso."}</h2>
+        <p>{campaignSegment ? "Esta página é dedicada a esta área de formação. Preencha os seus dados para receber informações sobre próximas turmas, conteúdos e condições de participação." : "Este formulário permite-nos compreender o que procura e entrar em contacto com informação adequada."}</p>
         <div className="form-aside-list">
-          <div className="form-aside-item"><span className="form-aside-number">1</span><span><strong>Indique as áreas</strong><br/>Escolha uma ou mais áreas de formação.</span></div>
+          <div className="form-aside-item"><span className="form-aside-number">1</span><span><strong>{campaignSegment ? "Área seleccionada" : "Indique as áreas"}</strong><br/>{campaignSegment ? "O seu pedido será encaminhado para a equipa desta formação." : "Escolha uma ou mais áreas de formação."}</span></div>
           <div className="form-aside-item"><span className="form-aside-number">2</span><span><strong>Partilhe os seus contactos</strong><br/>Para podermos responder ao seu pedido.</span></div>
-          <div className="form-aside-item"><span className="form-aside-number">3</span><span><strong>Receba informação</strong><br/>A equipa ALINVEST dará seguimento.</span></div>
+          <div className="form-aside-item"><span className="form-aside-number">3</span><span><strong>Receba informação</strong><br/>{campaignSegment ? `A equipa de ${segments.find(s => s.slug === campaignSegment)?.name} dará seguimento.` : "A equipa ALINVEST dará seguimento."}</span></div>
         </div>
       </aside>
       <section className="form-card">
