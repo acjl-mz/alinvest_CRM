@@ -26,26 +26,15 @@ export async function POST(request: Request) {
     if(!url||!key) return NextResponse.json({error:"O serviço de registo ainda não está configurado."},{status:503});
     const supabase=createClient(url,key,{auth:{persistSession:false}});
     const data=parsed.data;
-    const {data:lead,error:leadError}=await supabase.from("leads").insert({
+    const {error}=await supabase.from("leads").insert({
       full_name:data.full_name,phone:data.phone,email:data.email||null,city:data.city||null,
       education_level:data.education_level||null,professional_status:data.professional_status||null,
-      organization:data.organization||null,source:"landing_page",consent:true,status:"new"
-    }).select("id").single();
-    if(leadError||!lead) {
-      console.error("Lead insert failed",leadError?.message);
+      organization:data.organization||null,source:"landing_page",consent:true,status:"new",
+      selected_segment_slugs:data.segments
+    });
+    if(error) {
+      console.error("Lead insert failed",error.message);
       return NextResponse.json({error:"Não foi possível guardar o registo. Tente novamente mais tarde."},{status:500});
-    }
-    const {data:segments,error:segmentError}=await supabase.from("course_segments").select("id,slug").in("slug",data.segments).eq("active",true);
-    if(segmentError||!segments||segments.length!==data.segments.length) {
-      console.error("Segment lookup failed",segmentError?.message);
-      return NextResponse.json({error:"Não foi possível validar as áreas seleccionadas."},{status:500});
-    }
-    const interests=segments.map(segment=>({lead_id:lead.id,segment_id:segment.id,preferred_mode:data.preferred_mode||null,preferred_schedule:data.preferred_schedule||null}));
-    const {error:interestError}=await supabase.from("lead_interests").insert(interests);
-    if(interestError) {
-      console.error("Interest insert failed",interestError.message);
-      await supabase.from("leads").delete().eq("id",lead.id);
-      return NextResponse.json({error:"Não foi possível concluir o registo. Tente novamente."},{status:500});
     }
     return NextResponse.json({ok:true},{status:201});
   } catch {
