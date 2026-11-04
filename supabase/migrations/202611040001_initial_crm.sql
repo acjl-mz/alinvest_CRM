@@ -34,7 +34,7 @@ create table if not exists public.leads (
   notes text,
   source text not null default 'landing_page',
   consent boolean not null default false,
-  selected_segment_slugs text[] not null default '{}',
+  selected_segment_slugs text[] not null default '{}',\n  preferred_mode text,\n  preferred_schedule text,
   status text not null default 'new' check (status in ('new','contacted','follow_up','qualified','application_started','enrolled','matriculated','no_answer','not_interested','lost')),
   priority text not null default 'normal' check (priority in ('low','normal','high')),
   assigned_to uuid references auth.users(id) on delete set null,
